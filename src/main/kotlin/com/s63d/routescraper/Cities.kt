@@ -1,5 +1,7 @@
 package com.s63d.routescraper
 
+import java.util.*
+
 val at = listOf("Vienna",
         "Graz",
         "Linz",
@@ -83,4 +85,6 @@ val de = listOf("Berlijn", "Hamburg", "München", "Keulen", "Frankfurt", "Stuttg
 val lu = listOf("Dikrech", "Déifferdeng", "Diddeleng", "Iechternach", "Esch-Uelzecht", "Ettelbréck", "Gréiwenmaacher", "Lëtzebuerg", "Réimech", "Rëmmeleng", "Veianen", "Wolz")
 val be = listOf("Leuven", "Namur", "Anderlecht", "Brugge", "Schaarbeek", "Brussel", "Liège", "Charleroi", "Gent", "Antwerpen")
 
-val allCountries = at.intersect(nl).intersect(de).intersect(lu).intersect(be)
+val allCities = (at + nl + de + lu + be).shuffled()
+
+fun <E> List<E>.random(): E = if (size == 0) throw UnsupportedOperationException() else this.get(Random().nextInt(size))
