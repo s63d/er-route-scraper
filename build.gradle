@@ -39,6 +39,7 @@ compileTestKotlin {
 repositories {
     mavenCentral()
     jcenter()
+    maven { url 'https://jitpack.io' }
 }
 
 
@@ -49,4 +50,6 @@ dependencies {
     testCompile('org.springframework.boot:spring-boot-starter-test')
     compile "com.github.kittinunf.fuel:fuel:$fuelVersion"
     compile "com.github.kittinunf.fuel:fuel-jackson:$fuelVersion"
+    compile 'com.github.scoutant:polyline-decoder:b32557f'
+    compile('org.springframework.boot:spring-boot-starter-data-mongodb')
 }

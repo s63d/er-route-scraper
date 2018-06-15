@@ -1,8 +1,14 @@
 package com.s63d.routescraper
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
+import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.jackson.jacksonDeserializerOf
 import com.github.kittinunf.fuel.jackson.mapper
+import com.github.kittinunf.result.Result
+import com.s63d.routescraper.domain.api.MapsResponse
+import com.s63d.routescraper.domain.api.RoutesItem
+import com.s63d.routescraper.repositories.RouteRepository
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
@@ -10,7 +16,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @EnableScheduling
-class ScraperComponent {
+class ScraperComponent(private val routeRepository: RouteRepository) {
     companion object {
         const val API_KEY = "AIzaSyAuNGqrWQIRmNpBF7uhbZ1koVxVWQZmRNY"
         const val URL = "https://maps.googleapis.com/maps/api/directions/json"
@@ -26,7 +32,19 @@ class ScraperComponent {
         val from = allCities.random()
         val to = allCities.random()
 
-
+        Fuel.get(URL, listOf("origin" to from, "destination" to to)).responseObject(jacksonDeserializerOf<MapsResponse>()) { _, response, result ->
+            if (result is Result.Failure) {
+                logger.error("Response: ${response.responseMessage} (${response.statusCode})", result.error)
+                return@responseObject
+            }
+            val result = (result as Result.Success).value
+            logger.info("Response: ${response.responseMessage} (${response.statusCode})")
+            logger.info("Found ${result.routes.size} route${if(result.routes.size == 1) "" else "s"}")
+            result.routes.map(RoutesItem::toDatabaseModel).forEach {
+                val entity = routeRepository.save(it)
+                logger.info("Saved route with id ${entity.id.toHexString()}")
+            }
+        }
         logger.info("Generating trip from $from to $to")
     }
 }
